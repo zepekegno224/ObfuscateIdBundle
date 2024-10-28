@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="Zepekegno\ObfuscateIdBundle\Contract\ObfuscateIdInterface"
+                 alias="zepekegno_obfuscate.service.obfuscate"/>
+        <service id="zepekegno_obfuscate.service.obfuscate" class="Zepekegno\ObfuscateIdBundle\Service\ObfuscateService">
+            <argument>%obfuscate_secret_key%</argument>
+        </service>
+        <service id="zepekegno_obfuscate.twig.extension.obfuscate"
+                 class="Zepekegno\ObfuscateIdBundle\Twig\Extension\ObfuscateExtension">
+            <tag name="twig.extension"/>
+        </service>
+        <service id="zepekegno_obfuscate.twig.runtime.obfuscate"
+                 class="Zepekegno\ObfuscateIdBundle\Twig\Extension\ObfuscateRuntime">
+            <argument key="$obfuscateService" type="service" id="zepekegno_obfuscate.service.obfuscate"/>
+            <tag name="twig.runtime"/>
+        </service>
+        <service id="Zepekegno\ObfuscateIdBundle\ValueResolver\ObfuscateIdValueResolver">
+            <argument key="$obfuscate" type="service" id="Zepekegno\ObfuscateIdBundle\Contract\ObfuscateIdInterface"/>
+            <argument id="doctrine.orm.default_entity_manager" type="service" key="$entityManager"/>
+            <tag priority="150">controller.argument_value_resolver</tag>
+        </service>
+    </services>
+</container>
+
