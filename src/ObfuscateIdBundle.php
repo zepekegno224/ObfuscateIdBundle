@@ -9,7 +9,6 @@ use Zepekegno\ObfuscateIdBundle\DependencyInjection\ObfuscateIdExtension;
 class ObfuscateIdBundle extends Bundle
 {
 
-
 	public function getContainerExtension(): ?ExtensionInterface
 	{
 		if (null === $this->extension) {
