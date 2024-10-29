@@ -1,8 +1,10 @@
 {
   "name": "zepekegno/obfuscate-id-bundle",
   "description": "Symfony bundle to securely obfuscate and deobfuscate entity IDs in URLs. Provides attributes and Twig filters to handle obfuscation seamlessly within Symfony applications.",
+  "keywords": ["id", "symfony", "bundle", "zepekegno", "obfuscate", "offusquer"],
   "type": "symfony-bundle",
   "license": "MIT",
+  "homepage": "https://github.com/zepekegno224/ObfuscateIdBundle",
   "autoload": {
     "psr-4": {
       "Zepekegno\\ObfuscateIdBundle\\": "src/"
@@ -20,7 +22,7 @@
   "authors": [
     {
       "name": "Moussa Traore",
-      "email": "moussatraore@gmail.com"
+      "email": "moussatraore158@gmail.com"
     }
   ],
   "extra": {
