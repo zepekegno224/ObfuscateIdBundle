@@ -16,7 +16,7 @@
     }
   },
   "require": {
-    "php": ">=8.0",
+    "php": ">=8.2",
     "symfony/framework-bundle": "^6.0 || ^7.0"
   },
   "authors": [
@@ -32,6 +32,8 @@
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
-    "symfony/phpunit-bridge": "^7.1"
+    "symfony/phpunit-bridge": "^7.1",
+    "phpunit/phpunit": "^12.1",
+    "phpstan/phpstan": "^2.1"
   }
 }

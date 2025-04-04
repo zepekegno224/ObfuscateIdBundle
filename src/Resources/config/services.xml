@@ -20,7 +20,11 @@
         <service id="Zepekegno\ObfuscateIdBundle\ValueResolver\ObfuscateIdValueResolver">
             <argument key="$obfuscate" type="service" id="Zepekegno\ObfuscateIdBundle\Contract\ObfuscateIdInterface"/>
             <argument id="doctrine.orm.default_entity_manager" type="service" key="$entityManager"/>
-            <tag priority="150">controller.argument_value_resolver</tag>
+            <tag priority="500">controller.argument_value_resolver</tag>
+        </service>
+        <service id="Zepekegno\ObfuscateIdBundle\EventListener\ObfuscateIdListener">
+            <argument type="service" id="Zepekegno\ObfuscateIdBundle\Contract\ObfuscateIdInterface"/>
+            <tag name="doctrine.event_listener" event="postLoad"/>
         </service>
     </services>
 </container>

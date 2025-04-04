@@ -13,7 +13,8 @@ class Configuration implements ConfigurationInterface
 
 		$treeBuilder->getRootNode()
 			->children()
-			->scalarNode('obfuscate_secret_key')->defaultValue("%env(OBFUSCATE_SECRET_KEY)%")->end()
+			->scalarNode('obfuscate_secret_key')
+			->defaultNull()
 			->end();
 
 		return $treeBuilder;
