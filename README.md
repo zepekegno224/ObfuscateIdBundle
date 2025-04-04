@@ -1,238 +1,142 @@
-# Zepekegno ObfuscateBundle Documentation
-## 1. Introduction
-The **Zepekegno ObfuscateBundle** provides the ability to obfuscate and deobfuscate IDs in your Symfony application. It supports obfuscating IDs in both URLs and Twig templates, and it allows you to use **Symfony Attributes** to automatically resolve obfuscated IDs to actual entities in your controllers.
+# ObfuscateIdBundle
 
-## 2. Installation
-### Step 1 : Install the bundle via Composer
-You can install the bundle using Composer by running:
-```shell
+## Introduction
+
+ObfuscateIdBundle is a Symfony extension that enables obfuscation of identifiers in URLs and API responses.
+This new version introduces several improvements, including:
+
+- **Automatic obfuscation of IDs when loading fixtures with Doctrine**
+- **Support for dynamic properties** via the `#[ObfuscateId]` annotation
+- **Improved Twig filters**
+- **Persistent default key generation** when no key is provided
+- **Preserved compatibility with both entity-based and raw ID controller actions**
+
+## Installation
+
+Install the bundle via Composer:
+
+```sh
 composer require zepekegno/obfuscate-id-bundle
 ```
-### Step 2 : Register the bundle
-Symfony 7 should automatically register the bundle, but if it doesn’t, manually add it to your ```config/bundles.php```:
+
+Then, activate it in `bundles.php` if not automatically enabled:
 
 ```php
-// config/bundles.php
 return [
-    // Other bundles...
     Zepekegno\ObfuscateIdBundle\ObfuscateIdBundle::class => ['all' => true],
 ];
 ```
-### Step 3 : Configure the secret key
-In your ```.env``` file, add a secret key that will be used to obfuscate and deobfuscate IDs:
-```dotenv
-# .env
-OBFUSCATE_SECRET_KEY=your_secret_key_here
-```
-This key will be used in the obfuscation algorithm. The secret key must be 32 bytes long for AES-256 encryption
 
-## 3. Usage with Symfony Attributes
-Using ```ObfuscateId``` in a controller
-The bundle provides a custom attribute ```ObfuscateId``` that you can use to automatically resolve obfuscated IDs in your controller methods.
+## Configuration
 
-Below are examples of how to use this attribute in different scenarios.
-### Example 1: Basic ID Obfuscation
-In this example, the ``ObfuscateId`` attribute is used with the id route parameter, which is obfuscated in the URL and resolved to the Post entity in the controller.
+Add the following configuration in `config/packages/obfuscate_id.yaml`:
 
-````php
-// src/Controller/PostController.php
-
-namespace App\Controller;
-
-use App\Entity\Post;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Zepekegno\ObfuscateBundle\Attribute\ObfuscateId;
-
-class PostController extends AbstractController
-{
-    #[Route('/{id}', name: 'app_post_show', methods: ['GET'])]
-    public function show(
-        #[ObfuscateId] Post $post
-    ): Response {
-        return $this->render('post/show.html.twig', [
-            'post' => $post,
-        ]);
-    }
-}
-````
-#### Explanation:
-- ```#[ObfuscateId]``` without any parameters tells Symfony to use the default route parameter (id in this case).
-- ``The ValueResolver`` automatically deobfuscates the id parameter and resolves it to a Post entity.
-- The resulting URL might look like ``/post/abc123`` instead of ``/post/123``.
-
-### Example 2: Custom Route Parameter
-In this example, the ObfuscateId attribute specifies a custom route parameter, ``post``, instead of the default id.
-````php
-// src/Controller/PostController.php
-
-namespace App\Controller;
-
-use App\Entity\Post;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Zepekegno\ObfuscateBundle\Attribute\ObfuscateId;
-
-class PostController extends AbstractController
-{
-    #[Route('/{post}', name: 'app_post_show', methods: ['GET'])]
-    public function show(
-        #[ObfuscateId(routeParam: 'post')] Post $post
-    ): Response {
-        return $this->render('post/show.html.twig', [
-            'post' => $post,
-        ]);
-    }
-}
-````
-#### Explanation:
-- ``#[ObfuscateId(routeParam: 'post')]`` specifies that the route parameter post should be used.
-- The ``ValueResolver`` will use the ``post`` parameter in the URL, obfuscate it, and resolve it as a Post entity.
-- The URL will be ``/post/abc123`` instead of ``/post/123``, where ``abc123`` is the obfuscated ID.
-### Example 3: Custom Identifier Field
-In this example, the ``ObfuscateId`` attribute uses a custom identifier field called ``post``.
-```php
-// src/Controller/PostController.php
-
-namespace App\Controller;
-
-use App\Entity\Post;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Zepekegno\ObfuscateBundle\Attribute\ObfuscateId;
-
-class PostController extends AbstractController
-{
-    #[Route('/{id}', name: 'app_post_show', methods: ['GET'])]
-    public function show(
-        #[ObfuscateId(identifierField: 'post')] Post $post
-    ): Response {
-        return $this->render('post/show.html.twig', [
-            'post' => $post,
-        ]);
-    }
-}
-```
-#### Explanation
-- ``#[ObfuscateId(identifierField: 'post')]`` specifies that the ID field in the Post entity should be called post.
-- This is useful if your database uses a different primary key field name than ``id``.
-- The URL will look like ``/post/abc123`` instead of ``/post/123``, where ``abc123`` is the obfuscated ID.
-### Example 4: 
-In this example, we use the ``ObfuscateId`` attribute the index method  specifying both a custom route parameter ``(post)`` and the ``Post`` entity type.
-```php
-// src/Controller/PostController.php
-
-namespace App\Controller;
-
-use App\Entity\Post;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Zepekegno\ObfuscateBundle\Attribute\ObfuscateId;
-
-class PostController extends AbstractController
-{
-    #[Route('/{post}', name: 'app_post_show', methods: ['GET'])]
-    public function show(
-        #[ObfuscateId(routeParam: 'post', entity: Post::class)] $post,
-    ): Response {
-        return $this->render('post/show.html.twig', [
-            'post' => $post,
-        ]);
-    }
-}
-```
-#### Explanation
-- ``#[ObfuscateId(routeParam: 'post', entity: Post::class)]``:
-    - ``routeParam: 'post'`` specifies the route parameter used in the URL.
-    - ``entity: Post::class`` tells Symfony to resolve the obfuscated ID as a Post entity.
-- The URL will be ``/post/abc123`` instead of ``/post/123``, where ``abc123`` is the obfuscated ID.
-### Example 5: Custom Route Parameter
-In this example, we specify the Post entity in the ObfuscateId attribute so Symfony knows to resolve the ID as a Post entity.
-````php
-// src/Controller/PostController.php
-
-namespace App\Controller;
-
-use App\Entity\Post;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Zepekegno\ObfuscateBundle\Attribute\ObfuscateId;
-
-class PostController extends AbstractController
-{
-    #[Route('/{id}', name: 'app_post_show', methods: ['GET'])]
-    public function show(
-        #[ObfuscateId(enity:Post::class)] $post
-    ): Response {
-        return $this->render('post/show.html.twig', [
-            'post' => $post,
-        ]);
-    }
-}
-````
-#### Explanation
-- ```#[ObfuscateId(entity: Post::class)]``` specifies that the id route parameter should be deobfuscated and resolved as a Post entity.
-- The URL ```/post/abc123``` will be mapped to the actual Post entity with ID ``123`` after deobfuscation.
-- This configuration is useful when you want to define the entity type explicitly.
-
-### 4. Usage in Twig Templates
-In addition to using obfuscated IDs in routes, you can also obfuscate IDs in Twig templates using the provided filters.
-#### Available Twig Filters
-- ```obfuscate``` : To obfuscate an ID.
-- ```deobfuscate``` : To deobfuscate an obfuscated ID.
-##### Example Twig Template
-```html
-{# templates/post/show.html.twig #}
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Post Details</title>
-</head>
-<body>
-    <h1>{{ post.title }}</h1>
-
-    {# Generate a link with an obfuscated ID #}
-    <a href="{{ path('app_post_show', { 'id': post.id|offusquer }) }}">View Post</a>
-
-    {# Display obfuscated and deobfuscated IDs #}
-    <p>Obfuscated ID: {{ post.id|obfuscate }}</p>
-    <p>Deobfuscated ID: {{ 'YWJjMTIz'|deobfuscate }}</p>
-</body>
-</html>
-```
-### Generating URLs with Obfuscated IDs
-To generate a URL that contains an obfuscated ID:
-```twig
-<a href="{{ path('app_post_show', { 'id': post.id|obfuscate }) }}">View Post</a>
-```
-In this example, post.id|offusquer will obfuscate the post’s ID and pass it into the id parameter of the path() function.
-### 6. Customization
-You can customize the obfuscation algorithm by using your owner obfuscate service.
-Here how you can customize the obfuscation algorithm
-```php
-//src/service/CustomObfuscate.php
-class CustomObfuscateService implements ObfuscateInterface{
-  public function obfuscate(int $value):string{
-   // Do something here
-  }
-  public function deobfuscate(string $value):?int{
-   // Do something here
-  }
-}
-```
 ```yaml
-#config/packages/obfuscate_id
 obfuscate_id:
-  obfuscate_secret_key: "30e5d8b844cdace13dfb87e0ffbe9512"
-  obfuscateIdInterface: "@App\Service\CustomObfuscateService"
+    secret_key: '%env(OBFUSCATE_ID_SECRET)%'
 ```
-### 7. Conclusion
-The **Zepekegno ObfuscateBundle** simplifies the process of hiding sensitive IDs in URLs using obfuscation techniques. It integrates seamlessly with Symfony’s routing system and Twig templating engine, allowing you to easily obfuscate and deobfuscate IDs both in the backend and frontend.
-With support for **Symfony Attributes**, you can resolve obfuscated IDs into entities directly in your controller methods, making your code cleaner and more secure.
+
+Define the environment variables in `.env`:
+
+```ini
+OBFUSCATE_ID_SECRET="your_secret_key"
+```
+
+If `OBFUSCATE_ID_SECRET` is not defined, the bundle will automatically generate a **persistent default secret key** at installation time. This ensures a consistent encryption key across application restarts and deployments.
+
+The persistent IV will also be generated.
+
+## Usage
+
+### 1. **Obfuscation in Controllers**
+
+Obfuscation is now automatic, meaning you no longer need to manually annotate route parameters. The bundle will automatically deobfuscate IDs in controller actions:
+
+```php
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
+
+#[Route('/user/{id}', name: 'user_show')]
+public function show(int $id): Response
+{
+    return new Response("Deobfuscated ID: " . $id);
+}
+```
+
+For entity-based routes, it automatically resolves the entity:
+
+```php
+#[Route('/user/{id}', name: 'user_show')]
+public function show(User $user): Response
+{
+    return new Response("User: " . $user->getId());
+}
+```
+
+You may also use the annotation explicitly to control deobfuscation:
+
+```php
+use Zepekegno\ObfuscateIdBundle\ValueResolver\Attribute\ObfuscateId;
+
+#[Route('/user/{id}', name: 'user_show')]
+public function show(#[ObfuscateId(entity: User::class)] User $user): Response
+{
+    return new Response("User: " . $user->getId());
+}
+```
+
+### 2. **Automatic Obfuscation of IDs in Doctrine**
+
+When an entity is loaded, its ID is automatically obfuscated.
+Add the `#[Obfuscate]` annotation to the relevant property:
+
+```php
+use Zepekegno\ObfuscateIdBundle\Attribute\Obfuscate;
+
+#[ORM\Entity]
+class User
+{
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
+    #[Obfuscate] // This property will be automatically obfuscated
+    private ?int $id = null;
+}
+```
+
+### 3. **Using Obfuscation in Twig**
+
+Use the `obfuscate` filter to mask an identifier in a template:
+
+```twig
+<a href="{{ path('user_show', { id: user.id|obfuscate }) }}">View User</a>
+```
+
+## Doctrine Events
+
+The bundle listens for the following events:
+
+- **postLoad** → Automatically applies obfuscation to loaded entities.
+
+## Development
+
+Install dependencies:
+
+```
+## Contributing
+
+1. Fork the repository
+2. Clone your fork
+3. Create your feature branch: `git checkout -b feature/YourFeature`
+4. Commit your changes: `git commit -am 'Add new feature'`
+5. Push to the branch: `git push origin feature/YourFeature`
+6. Create a new Pull Request
+
+### Guidelines
+
+- Ensure test coverage for your changes.
+- Follow PSR coding standards.
+- Prefer small, focused pull requests.
+
+## Support
+
+If you encounter any issues, open an issue on [GitHub](https://github.com/zepekegno224/ObfuscateIdBundle/issues).
+

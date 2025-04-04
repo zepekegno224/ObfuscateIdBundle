@@ -13,8 +13,9 @@ class ObfuscateServiceTest extends TestCase
 
 	protected function setUp(): void
 	{
-		$this->obfuscateService = new ObfuscateService('30e5d8b844cdace13dfb87e0ffbe957d');
+		$this->obfuscateService = new ObfuscateService();
 	}
+
 
 	/**
 	 * @throws RandomException
@@ -39,14 +40,14 @@ class ObfuscateServiceTest extends TestCase
 		$this->assertNull($this->obfuscateService->deobfuscate($invalidHexString), 'Invalid hex string should return null.');
 	}
 
-	public function testDifferentObfuscatedResultsForSameId(): void
+
+	public function testObfuscateIsDeterministic(): void
 	{
-		$originalId = 12345;
+		$id = '123';
 
-		// Obfuscating the same ID should return different results due to random IV
-		$obfuscatedId1 = $this->obfuscateService->obfuscate($originalId);
-		$obfuscatedId2 = $this->obfuscateService->obfuscate($originalId);
+		$obfuscated1 = $this->obfuscateService->obfuscate($id);
+		$obfuscated2 = $this->obfuscateService->obfuscate($id);
 
-		$this->assertNotSame($obfuscatedId1, $obfuscatedId2, 'Obfuscating the same ID should result in different strings.');
+		$this->assertEquals($obfuscated1, $obfuscated2, 'L\'obfuscation doit être identique pour le même ID');
 	}
 }
