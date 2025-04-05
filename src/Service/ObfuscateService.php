@@ -14,7 +14,15 @@ final class ObfuscateService implements ObfuscateIdInterface
 	}
 
 	/**
-	 * @throws RandomException
+	 * Gets the encryption key.
+	 *
+	 * @return string The SHA-256 hashed encryption key in binary format
+	 * @throws RandomException If key generation fails
+	 *
+	 * If no custom key was provided in constructor, this will:
+	 * 1. Check for existing key in var/obfuscate_key.txt
+	 * 2. Generate and store a new key if none exists
+	 * 3. Return the hashed key
 	 */
 	public function getSecretKey(): string
 	{
@@ -24,7 +32,17 @@ final class ObfuscateService implements ObfuscateIdInterface
 
 
 	/**
-	 * @throws RandomException
+	 * Obfuscates a numeric ID into an encrypted hexadecimal string.
+	 *
+	 * @param int $value The numeric ID to obfuscate
+	 * @return string Hexadecimal representation of the encrypted ID
+	 * @throws RandomException If IV generation fails
+	 * @throws \RuntimeException If encryption fails
+	 *
+	 * The encryption process:
+	 * 1. Generates or loads an initialization vector (IV)
+	 * 2. Encrypts the ID using AES-256-CBC
+	 * 3. Returns the result as a hexadecimal string
 	 */
 	public function obfuscate(int $value): string
 	{
@@ -38,11 +56,20 @@ final class ObfuscateService implements ObfuscateIdInterface
 	}
 
 	/**
+	 * Deobfuscates an encrypted hexadecimal string back to the original numeric ID.
+	 *
+	 * @param string $value The hexadecimal string to deobfuscate
+	 * @return int|null The original numeric ID, or null if:
+	 *                  - The input is not a valid obfuscated string
+	 *                  - Decryption fails
+	 *
+	 * The decryption process attempts two methods:
+	 * 1. Standard decryption with current IV
+	 * 2. Legacy decryption (for values encrypted with older versions)
 	 * @throws RandomException
 	 */
 	public function deobfuscate(string $value): ?int
 	{
-
 		if (!$this->isObfuscated($value)) {
 			return null;
 		}
@@ -65,6 +92,13 @@ final class ObfuscateService implements ObfuscateIdInterface
 		return null;
 	}
 
+	/**
+	 * Checks if a string is a valid obfuscated ID.
+	 *
+	 * @param string $value The string to validate
+	 * @return bool True if the string is a valid hexadecimal representation
+	 *              of encrypted data, false otherwise
+	 */
 	public function isObfuscated(string $value): bool
 	{
 		if (!ctype_xdigit($value) || strlen($value) % 2 !== 0) {
@@ -75,7 +109,13 @@ final class ObfuscateService implements ObfuscateIdInterface
 	}
 
 	/**
-	 * @throws RandomException
+	 * Loads or generates an encryption key.
+	 *
+	 * @return string The encryption key
+	 * @throws RandomException If key generation fails
+	 * @throws \RuntimeException If directory creation fails
+	 *
+	 * The key is stored in var/obfuscate_key.txt and persists between requests.
 	 */
 	private function loadOrGenerateKey(): string
 	{
@@ -92,6 +132,14 @@ final class ObfuscateService implements ObfuscateIdInterface
 		return $generatedKey;
 	}
 
+	/**
+	 * Loads or generates an initialization vector (IV) for encryption.
+	 *
+	 * @return string The IV (16 bytes)
+	 * @throws \RuntimeException|RandomException If directory creation or file writing fails
+	 *
+	 * The IV is stored in var/obfuscate_iv.bin and persists between requests.
+	 */
 	private function loadOrGenerateIV(): string
 	{
 		$varDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'var';
