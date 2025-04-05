@@ -1,5 +1,5 @@
 # ObfuscateIdBundle
-
+[![Latest Stable Version](http://poser.pugx.org/zepekegno/obfuscate-id-bundle/v)](https://packagist.org/packages/zepekegno/obfuscate-id-bundle) [![Total Downloads](http://poser.pugx.org/zepekegno/obfuscate-id-bundle/downloads)](https://packagist.org/packages/zepekegno/obfuscate-id-bundle) [![License](http://poser.pugx.org/zepekegno/obfuscate-id-bundle/license)](https://packagist.org/packages/zepekegno/obfuscate-id-bundle) [![PHP Version Require](http://poser.pugx.org/zepekegno/obfuscate-id-bundle/require/php)](https://packagist.org/packages/zepekegno/obfuscate-id-bundle)
 ## Introduction
 
 ObfuscateIdBundle is a Symfony extension that enables obfuscation of identifiers in URLs and API responses.
@@ -136,7 +136,7 @@ Install dependencies:
 - Follow PSR coding standards.
 - Prefer small, focused pull requests.
 
+```
 ## Support
-
 If you encounter any issues, open an issue on [GitHub](https://github.com/zepekegno224/ObfuscateIdBundle/issues).
-
+For feature requests, please provide a detailed description of the use case and expected behavior.

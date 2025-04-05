@@ -2,15 +2,13 @@
 
 namespace Zepekegno\ObfuscateIdBundle\EventListener;
 
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
+use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use ReflectionClass;
 use ReflectionException;
 use Zepekegno\ObfuscateIdBundle\Contract\ObfuscateIdInterface;
-use Zepekegno\ObfuscateIdBundle\Service\ObfuscateService;
 use Zepekegno\ObfuscateIdBundle\ValueResolver\Attribute\Obfuscate;
 
-#[AsEntityListener(event: 'postLoad')]
 final class ObfuscateIdListener
 {
 	public function __construct(private readonly ObfuscateIdInterface $obfuscateService)
