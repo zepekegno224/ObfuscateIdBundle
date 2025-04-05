@@ -8,4 +8,6 @@ interface ObfuscateIdInterface
 
 	public function deobfuscate(string $value): ?int;
 
+	public function isObfuscated(string $value): bool;
+
 }
